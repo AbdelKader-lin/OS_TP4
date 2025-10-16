@@ -1,0 +1,102 @@
+Qust 2.1
+The peruvian schedule might make sure to arrive first, then every time the bolivian 
+driver is sleeping a new peruvian driver arrives and drops the pebble in the bowl.
+
+
+Qust 2.2
+
+// Shared variable
+int check = 0 ;
+
+void enter_cs(){
+	while ( check != 0 ){
+		sleep( rand() % 10 ); // We don't know the sleeping time
+	}
+	check = 1 ;
+	// Execution
+	// Access cs
+	}
+
+}
+
+void leave_cs(){
+	check = 0 ;
+}
+
+int main(){
+	// Enter CS
+	enter_cs() ;
+	// execution in sc
+	leave_cs()
+	
+	return 0 ;
+}
+
+
+Qust 2.3
+
+The problem was never observed, it is so inprobable for another train to arrive 
+every single time at during the sleeping stage of the other driver. It may happen
+several times, but this occuring forever has a very low proba of happening
+
+
+Qust 2.4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
