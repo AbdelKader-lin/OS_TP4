@@ -1,3 +1,6 @@
+  Part II :  Bolivian and Peruvian train
+//_______   ____________________________
+
 Qust 2.1
 The peruvian schedule might make sure to arrive first, then every time the bolivian 
 driver is sleeping a new peruvian driver arrives and drops the pebble in the bowl.
@@ -41,62 +44,114 @@ several times, but this occuring forever has a very low proba of happening
 
 
 Qust 2.4
+The problem is the need for critical sections
+
+Qust 2.5
+Liveness
+
+Qust 2.6
+Both trains arrive at the same time, they both put a pebble in the bowl at the same time,
+then both try access the pass.
+
+Both threads they check check == 0 condition, both can enter the cs, thus we have both threads accessing cs
+at the same time
+
+
+Qust 2.7
+T1 might get blocked in enter_cs() if T0, does not want to enter.
+
+Qust 2.8
+Both threads can put wants[ my_id ] to 1 at the same time. In this case, they both enter a sleeping phase.
 
 
 
 
+  Part III : Implementing a barrier with semaphores
+//_______    _______________________________________
+
+Qust 3.9
+
+Rappel : 
+
+	int sem_wait(sem_t *sem)
+		decrements (locks) the semaphore pointed to by sem.  If the semaphore's value is greater than zero,
+		then the decrement proceeds, and the function returns, immediately.  If the semaphore currently has 
+		the value zero, then the call blocks until either it becomes possible to perform the decrement 
+		(i.e.,the semaphore  value  rises above zero), or a signal handler interrupts the call.
+
+
+	int sem_post(sem_t *sem);
+	DESCRIPTION
+		sem_post() increments (unlocks) the semaphore pointed to by sem.  If the semaphore's value consequently 
+		becomes greater than zero, then another process or thread blocked in a sem_wait(3) call will be woken up 
+		and proceed to lock the semaphore.
+
+
+-->
+S_A , S_B : initial value = 0 ;
+
+
+// Thread A
+IA1 ;
+// A_sync
+	sem_post( S_A ) ; // Now we have : C_A = 1 ; ( C_A is the counting var in sem_post() )
+	sem_wait( S_B ) ; // A is waiting for B
+// End of sync
+IA2;
+
+
+// Thread B
+IA1 ;
+// A_sync
+	sem_post( S_B ) ; // C_B = 1, and unlocks A 
+	sem_wait( S_A ) ; // Will check if C_A <= ; it waits
+			  // It passes directly
+// End of sync
+IA2;
 
 
 
 
+  Part IV : Semaphores vs condition vars
+//_______    _______________________________________
 
+Qust 4.10
 
+	mutex_t mutex = M_INIT ;
+	cond_t sem_event = C_INIT ;
+	void sem_init( int N ){
+		sem_capacity = N ;
+	}
+	void P ( void ){
+		mutex_lock( &mutex );
+		sem_capacity-- ;
+		if ( sem_capacity < 0 ){
+			cond_wait( &sem_event , &mutex ) ;
+		}
+		mutex_unlock( &mutex ) ;
+	}
+	
+	// The better version
+	/* 
+	In this case we don't allow the capacity to be < 0. 
+	In the first function, a capacity < 0 represents the 
+	number of threads waiting.
+	
+	// Spurious wakeups
+	*/
+	void P ( void ){
+		mutex_lock( &mutex );
+		while ( sem_capacity == 0 ){
+			cond_wait( &sem_event , &mutex ) ;
+		} 
+		sem_capacity-- ;
+		mutex_unlock( &mutex ) ;
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	void V( void ){
+		mutex_lock( &mutex ) ;
+		sem_capacity++ ;
+		cond_signal( &sem_event );
+		mutex_unlock( &mutex );	
+	} 
 
