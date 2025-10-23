@@ -13,7 +13,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int count = 1; // Number of trains allowed in the shared track section;
 
 void sem_initialise( int N ){
-    sem_init( &sem , 0 , 1);
+    sem_init( &sem , 0 , N);
 }
 
 void enter_shared_track_sem(void){ // Sem version
@@ -40,7 +40,7 @@ void exit_shared_track(void){ // No semaphore
 void using_shared_track_section(char* name){
     int trip_duration = rand() % 6 +1;
 
-    enter_shared_track();
+    enter_shared_track_sem();
     
     for(; trip_duration>0; trip_duration--){        
         printf("%c ",name[0]);
@@ -50,7 +50,7 @@ void using_shared_track_section(char* name){
 
     printf("\n");
 
-    exit_shared_track();
+    exit_shared_track_sem();
 }
 
 
@@ -96,6 +96,8 @@ int main(void){
     for (i = 0; i < 2; i++){
         pthread_join (tids[i], NULL) ;
     }  
+
+    sem_destroy( &sem );
     
     return EXIT_SUCCESS;
 }
