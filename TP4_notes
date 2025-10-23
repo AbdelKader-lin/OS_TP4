@@ -138,7 +138,7 @@ Qust 4.10
 	number of threads waiting.
 	
 	// Spurious wakeups
-	*/
+	*/	
 	void P ( void ){
 		mutex_lock( &mutex );
 		while ( sem_capacity == 0 ){
@@ -154,4 +154,86 @@ Qust 4.10
 		cond_signal( &sem_event );
 		mutex_unlock( &mutex );	
 	} 
+
+
+
+Part V :	Semaphores vs Condition Variables (2nd round)
+//_______    	______________________________________________
+
+Qust 5.11-
+
+
+//	______________________________________________
+Rappel : 
+
+	int sem_wait(sem_t *sem)
+		decrements (locks) the semaphore pointed to by sem.  If the semaphore's value is greater than zero,
+		then the decrement proceeds, and the function returns, immediately.  If the semaphore currently has 
+		the value zero, then the call blocks until either it becomes possible to perform the decrement 
+		(i.e.,the semaphore  value  rises above zero), or a signal handler interrupts the call.
+
+
+	int sem_post(sem_t *sem);
+	DESCRIPTION
+		sem_post() increments (unlocks) the semaphore pointed to by sem.  If the semaphore's value consequently 
+		becomes greater than zero, then another process or thread blocked in a sem_wait(3) call will be woken up 
+		and proceed to lock the semaphore.
+//	______________________________________________
+		
+
+	sem_t s ;
+	void init(){
+		sem_init( &s , 0 ) ;	
+	}
+	
+	void get_new_click_event(){
+		/*
+		• 	void get_new_click(void): Returns only when a click event is available. By available,
+			we mean that each click can be associated with a single call to get_new_click(). We also
+			mean that no event is lost, that is, if there is a new click event while no thread is blocked in
+			the get_new_click() function, then the next thread calling get_new_click() will not
+			block.
+		*/
+		sem_wait( &s ) ;
+	}
+	
+	void new_click_event(){
+		// • void new_click_event(void): Informs that a new click has been detected.
+		sem_post( &s ) ;
+	}
+	
+	
+Qust 5.12-
+
+	// Variables 
+	int event_count = 0 ;
+	mutex_t mutex = MUTEX_INITIALIZER ;
+	cond_t new_event = COND_INITIALIZER ;
+	
+	void get_new_click_event(){
+		/*
+		• 	void get_new_click(void): Returns only when a click event is available. By available,
+			we mean that each click can be associated with a single call to get_new_click(). We also
+			mean that no event is lost, that is, if there is a new click event while no thread is blocked in
+			the get_new_click() function, then the next thread calling get_new_click() will not
+			block.
+		*/
+		mutex_lock( &mutex );
+		while( event_count == 0 ){
+			cond_wait( &new_event , &mutex );
+		} 
+		event_count-- ;
+		mutex_unlock( &mutex ) ;
+	}
+	
+	void new_click_event(){
+		// • void new_click_event(void): Informs that a new click has been detected.
+		mutex_lock( &mutex ) ;
+		event_count++ ;
+		cond_signal( &new_event ) ;
+		mutex_unlock( &mutex ) ;
+	}
+
+
+
 
